@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">LocationTracker</string>
+    <string name="background_enhance">Enhance with Background Location</string>
+    <string name="turn_on_device_location">For a better experience, turn on device location</string>
+    <string name="ok">OK</string>
+    <string name="no_thanks">No thanks</string>
+</resources>
