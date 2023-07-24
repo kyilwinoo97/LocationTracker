@@ -98,23 +98,20 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         Log.d(TAG, "Main Activity Destroy")
         LocationService().isRunning = false
-        val broadcastIntent = Intent(this, Restarter::class.java)
-        broadcastIntent.action = "com.locationtracker.mm.restart"
-        this.sendBroadcast(broadcastIntent)
+//        val broadcastIntent = Intent(this, Restarter::class.java)
+//        broadcastIntent.action = "com.locationtracker.mm.restart"
+//        this.sendBroadcast(broadcastIntent)
 
-//        val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
-//        val intent = Intent(this,Restarter::class.java)
-//        intent.action = "com.locationtracker.mm.restart";
-//        var pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_MUTABLE)
-//
-//        alarmManager.setRepeating(
-//            AlarmManager.ELAPSED_REALTIME_WAKEUP,
-//            SystemClock.elapsedRealtime() + INTERVAL_3_MINUTES,
-//            INTERVAL_3_MINUTES,
-//            pendingIntent
-//        )
+        val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
+        val intent = Intent(this,Restarter::class.java)
+        intent.action = "com.locationtracker.mm.restart";
+        var pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_MUTABLE)
 
-
+        alarmManager.set(
+            AlarmManager.RTC_WAKEUP,
+            SystemClock.elapsedRealtime() + INTERVAL_3_MINUTES,
+            pendingIntent
+        )
         super.onDestroy()
 
     }
