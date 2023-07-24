@@ -42,7 +42,7 @@ class LocationAdapter(val item : List<LocationEntity>, val context: Context) :Re
                 }
 
                 //only for debugging
-                //txtbackground.text = appState
+                txtbackground.text = appState
 
             }
         }

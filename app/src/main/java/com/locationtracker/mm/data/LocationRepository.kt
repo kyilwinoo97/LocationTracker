@@ -41,7 +41,10 @@ class LocationRepository private constructor(
     fun startLocationUpdates() = myLocationManager.startLocationUpdates()
 
     @MainThread
+    fun startForegroundLocationUpdate() = myLocationManager.startForegroundLocationUpdates()
+    @MainThread
     fun  stopLocationUpdates() = myLocationManager.stopLocationUpdates()
+    fun stopForegroundLocationUpdate()  = myLocationManager.stopForegroundLocationUpdate()
 
     companion object{
         @Volatile private var INSTANCE: LocationRepository? = null

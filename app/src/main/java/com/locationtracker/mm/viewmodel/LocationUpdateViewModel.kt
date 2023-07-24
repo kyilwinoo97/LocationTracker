@@ -18,6 +18,10 @@ class LocationUpdateViewModel(application: Application) : AndroidViewModel(appli
         val locationListLiveData = locationRepository.getLocations()
 
         fun startLocationUpdates() = locationRepository.startLocationUpdates()
-
         fun stopLocationUpdates() = locationRepository.stopLocationUpdates()
+
+
+    fun startForegroundLocationUpdates() = locationRepository.startForegroundLocationUpdate()
+        fun stopForegroundLocationUpdates() = locationRepository.stopForegroundLocationUpdate()
+
 }

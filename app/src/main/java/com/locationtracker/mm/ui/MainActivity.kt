@@ -71,6 +71,11 @@ class MainActivity : AppCompatActivity() {
         //request permission
         requestFineLocationPermission()
 
+        if (hasPermission(Manifest.permission.ACCESS_BACKGROUND_LOCATION)){
+            binding.btnBackground.visibility = View.GONE
+        }
+        startForegrounLocationUpdate()
+
         binding.btnBackground.setOnClickListener{
             requestBackgroundLocationPermission()
         }
@@ -93,6 +98,19 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun startForegrounLocationUpdate() {
+        locationUpdateViewModel.startLocationUpdates()
+
+        // testing
+//        locationUpdateViewModel.stopLocationUpdates()
+//        locationUpdateViewModel.startForegroundLocationUpdates()
+    }
+
+    override fun onDestroy() {
+        locationUpdateViewModel.startLocationUpdates()
+        locationUpdateViewModel.stopForegroundLocationUpdates()
+        super.onDestroy()
+    }
     private fun setUpRecyclerView() {
         locationAdapter = LocationAdapter(locationList, context = this)
         binding.apply {
@@ -111,6 +129,8 @@ class MainActivity : AppCompatActivity() {
             REQUEST_FINE_LOCATION_PERMISSIONS_REQUEST_CODE ->
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     binding.btnBackground.visibility = View.VISIBLE
+                    binding.recyclerViewLocation.visibility = View.VISIBLE
+                    locationUpdateViewModel.startForegroundLocationUpdates()
                     return
                 }
             REQUEST_BACKGROUND_LOCATION_PERMISSIONS_REQUEST_CODE ->
@@ -137,13 +157,13 @@ class MainActivity : AppCompatActivity() {
                 fineLocationRationalSnackbar)
         }
     }
-
     private fun requestBackgroundLocationPermission() {
         val permissionApproved =
             hasPermission(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
 
         if (permissionApproved) {
-            locationUpdateViewModel.startLocationUpdates()
+//            locationUpdateViewModel.stopForegroundLocationUpdates()
+//            locationUpdateViewModel.startLocationUpdates()
             binding.recyclerViewLocation.visibility = View.VISIBLE
         } else {
             requestPermissionWithRationale(
