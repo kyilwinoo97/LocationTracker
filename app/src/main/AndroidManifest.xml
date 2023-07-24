@@ -36,11 +36,21 @@
             </intent-filter>
         </activity>
 
+<!--        <receiver-->
+<!--            android:name=".LocationUpdateBroadcastReceiver"-->
+<!--            android:exported="true">-->
+<!--            <intent-filter>-->
+<!--                <action android:name="com.locationtracker.mm.action.PROCESS_UPDATES" />-->
+<!--            </intent-filter>-->
+<!--        </receiver>-->
+
         <receiver
-            android:name=".LocationUpdateBroadcastReceiver"
+            android:name=".Restarter"
+            android:enabled="true"
             android:exported="true">
             <intent-filter>
-                <action android:name="com.locationtracker.mm.action.PROCESS_UPDATES" />
+                <action android:name="com.locationtracker.mm.restart"/>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
             </intent-filter>
         </receiver>
         <service

@@ -30,25 +30,18 @@ import com.locationtracker.mm.data.LocationRepository
 import com.locationtracker.mm.data.db.LocationEntity
 import com.locationtracker.mm.ui.MainActivity
 import java.io.*
-import java.net.HttpURLConnection
-import java.net.URL
-import java.net.URLEncoder
-import java.util.AbstractMap
-import java.util.ArrayList
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.Executors
-import javax.net.ssl.HttpsURLConnection
 
 @Suppress("DEPRECATED_IDENTITY_EQUALS")
 class LocationService: Service(), GoogleApiClient.ConnectionCallbacks,
     GoogleApiClient.OnConnectionFailedListener {
 
     @Volatile
-    private var isRunning = false
+    var isRunning = false
 
     private var currentLocation: Location? = null
-    private var speed = ""
 
     private var googleApiClient: GoogleApiClient? = null
     private var locationRequest: LocationRequest? = null
@@ -66,11 +59,26 @@ class LocationService: Service(), GoogleApiClient.ConnectionCallbacks,
 
     private val TAG = "LocationService"
 
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d(TAG,"Location Service Destroy")
+    }
     override fun onCreate() {
         super.onCreate()
+        Log.d(TAG,"Service Created")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForeground()
+        }else{
+            showNotification(
+                applicationContext, PERMISSION_NOT_GRANTED_NOTIFICATION_ID,
+                "Location Tracker",
+                "Location Tracker is running."
+            )
         }
+    }
+
+    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+        Log.d(TAG,"Service On Start Command")
 
         val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
         wakelock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "tracker:wakelock")
@@ -78,19 +86,13 @@ class LocationService: Service(), GoogleApiClient.ConnectionCallbacks,
         thread = ContinousThread()
 
         init()
-    }
-
-    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         return START_STICKY
     }
 
     private fun init() {
-        wakelock!!.acquire()
+        wakelock!!.acquire(10*60*1000L ) /*10 minutes*/
 
-        if (!isRunning) {
-            isRunning = true
-            thread!!.start()
-        }
+
 
         locationRequest = LocationRequest.create()
         locationRequest!!.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
@@ -106,9 +108,13 @@ class LocationService: Service(), GoogleApiClient.ConnectionCallbacks,
         } catch (e: Exception) {
             e.printStackTrace()
         }
+        if (!isRunning) {
+            isRunning = true
+            thread!!.start()
+        }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun startForeground() {
         val notificationIntent = Intent(this, MainActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(
@@ -127,7 +133,7 @@ class LocationService: Service(), GoogleApiClient.ConnectionCallbacks,
         val notification = notificationBuilder.setOngoing(true)
             .setSmallIcon(R.mipmap.ic_launcher)
             .setContentTitle("Location Tracker")
-            .setContentTitle("App is running in background")
+            .setContentTitle("Location Tracker is running.")
             .setContentIntent(pendingIntent)
             .setPriority(NotificationManager.IMPORTANCE_MIN)
             .setCategory(Notification.CATEGORY_SERVICE)
@@ -143,7 +149,6 @@ class LocationService: Service(), GoogleApiClient.ConnectionCallbacks,
     private val locationListener: LocationListener = object : LocationListener {
         override fun onLocationChanged(location: Location) {
             currentLocation = location
-            Log.v(TAG, location.accuracy.toString())
         }
     }
 
@@ -222,8 +227,8 @@ class LocationService: Service(), GoogleApiClient.ConnectionCallbacks,
         override fun run() {
             while (isRunning) {
                 try {
-                    sleep(1 * 60 * 1000)
                     saveLocation()
+                    sleep(3 * 60 * 1000)
 
                 } catch (e: InterruptedException) {
                     isRunning = false
@@ -248,19 +253,7 @@ class LocationService: Service(), GoogleApiClient.ConnectionCallbacks,
             }
 
         }
-        private fun isAppInForeground(context: Context): Boolean {
-            val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-            val appProcesses = activityManager.runningAppProcesses ?: return false
 
-            appProcesses.forEach { appProcess ->
-                if (appProcess.importance ==
-                    ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND &&
-                    appProcess.processName == context.packageName) {
-                    return true
-                }
-            }
-            return false
-        }
 
         private fun getAddress(latitude: Double, longitude: Double, context: Context): String {
             val geocoder = Geocoder(context, Locale.getDefault())
@@ -278,19 +271,38 @@ class LocationService: Service(), GoogleApiClient.ConnectionCallbacks,
             return  addr
         }
 
+
         @SuppressLint("MissingPermission")
         private fun getLastKnownLocation(): Location? {
-            val providers = locationManager!!.getProviders(true)
-            var bestLocation: Location? = null
-            for (provider in providers) {
-                val location = locationManager!!.getLastKnownLocation(provider) ?: continue
 
-                if (bestLocation == null || location.accuracy < bestLocation.accuracy) {
-                    bestLocation = location
+          val providers =  locationManager?.let {
+                it.getProviders(true)
+            }
+            var bestLocation: Location? = null
+            if (providers != null) {
+                for (provider in providers) {
+                    val location = locationManager!!.getLastKnownLocation(provider) ?: continue
+
+                    if (bestLocation == null || location.accuracy < bestLocation.accuracy) {
+                        bestLocation = location
+                    }
                 }
             }
             return bestLocation
         }
 
+    }
+    private fun isAppInForeground(context: Context): Boolean {
+        val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        val appProcesses = activityManager.runningAppProcesses ?: return false
+
+        appProcesses.forEach { appProcess ->
+            if (appProcess.importance ==
+                ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND &&
+                appProcess.processName == context.packageName) {
+                return true
+            }
+        }
+        return false
     }
 }

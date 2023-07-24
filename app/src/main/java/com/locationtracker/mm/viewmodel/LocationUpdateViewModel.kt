@@ -21,7 +21,5 @@ class LocationUpdateViewModel(application: Application) : AndroidViewModel(appli
         fun stopLocationUpdates() = locationRepository.stopLocationUpdates()
 
 
-    fun startForegroundLocationUpdates() = locationRepository.startForegroundLocationUpdate()
-        fun stopForegroundLocationUpdates() = locationRepository.stopForegroundLocationUpdate()
 
 }
