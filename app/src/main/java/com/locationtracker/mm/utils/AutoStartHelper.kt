@@ -5,9 +5,12 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.ApplicationInfo
+import android.net.Uri
 import android.os.Build
-import android.util.Log
+import android.os.PowerManager
+import android.provider.Settings
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import java.util.Locale
 
 
@@ -93,7 +96,7 @@ class AutoStartHelper {
     private val TAG = "AutoStartHelper"
 
     fun getAutoStartPermission(context: Context) :Boolean{
-        return PrefsUtils().getBooleanPreference(context, PrefsUtils().PREF_KEY_APP_AUTO_START, true)
+        return PrefsUtils().getBooleanPreference(context, PrefsUtils().PREF_KEY_APP_AUTO_START, false)
     }
     fun requestAutoStartPermission(context: Context) {
         val build_info = Build.BRAND.lowercase(Locale.getDefault())
@@ -108,6 +111,20 @@ class AutoStartHelper {
             BRAND_OPPO -> autoStartOppo(context)
             BRAND_VIVO -> autoStartVivo(context)
             BRAND_NOKIA -> autoStartNokia(context)
+        }
+    }
+
+    fun batteryOptimization(context: Context){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            var intent = Intent()
+            var packageName = context.getPackageName()
+            var pm =  context.getSystemService(AppCompatActivity.POWER_SERVICE) as PowerManager;
+            if (!pm.isIgnoringBatteryOptimizations(packageName)) {
+
+                intent.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+                intent.setData(Uri.parse("package:" + packageName));
+                context.startActivity(intent);
+            }
         }
     }
 

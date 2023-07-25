@@ -20,9 +20,6 @@ class LocationTrackerManager private constructor(private  val context: Context){
     private val _receivingLocationUpdates: MutableLiveData<Boolean> = MutableLiveData<Boolean>(false)
     val receivingLocationUpdates: LiveData<Boolean>
         get() = _receivingLocationUpdates
-    private val fusedLocationClient: FusedLocationProviderClient =
-        LocationServices.getFusedLocationProviderClient(context)
-    private val INTERVAL_3_MINUTES : Long = 3 * 60 * 1000
 
     @Throws(SecurityException::class)
     @MainThread
@@ -49,7 +46,6 @@ class LocationTrackerManager private constructor(private  val context: Context){
     }
     @MainThread
     fun stopLocationUpdates() {
-        Log.d(TAG, "stopLocationUpdates()")
         _receivingLocationUpdates.value = false
     }
 

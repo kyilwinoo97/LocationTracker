@@ -12,9 +12,6 @@ class LocationUpdateViewModel(application: Application) : AndroidViewModel(appli
             application.applicationContext,
             Executors.newSingleThreadExecutor()
         )
-
-        val receivingLocationUpdates: LiveData<Boolean> = locationRepository.receivingLocationUpdates
-
         val locationListLiveData = locationRepository.getLocations()
 
         fun startLocationUpdates() = locationRepository.startLocationUpdates()

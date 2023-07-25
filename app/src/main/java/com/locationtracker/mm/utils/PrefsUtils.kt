@@ -1,7 +1,6 @@
 package com.locationtracker.mm.utils
 
 import android.content.Context
-import android.content.SharedPreferences
 import android.preference.PreferenceManager
 import android.text.TextUtils
 

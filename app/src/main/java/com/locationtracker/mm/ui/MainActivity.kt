@@ -7,7 +7,10 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.LocationManager
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
 import android.os.SystemClock
 import android.provider.Settings
 import android.util.Log
@@ -82,7 +85,7 @@ class MainActivity : AppCompatActivity() {
         if (!AutoStartHelper().getAutoStartPermission(this)){
             AutoStartHelper().requestAutoStartPermission(this);
         }
-
+        AutoStartHelper().batteryOptimization(this)
 
         locationUpdateViewModel.locationListLiveData.observe(
             this
@@ -101,12 +104,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        Log.d(TAG, "Main Activity Destroy")
         LocationService().isRunning = false
-//        val broadcastIntent = Intent(this, Restarter::class.java)
-//        broadcastIntent.action = "com.locationtracker.mm.restart"
-//        this.sendBroadcast(broadcastIntent)
-
         val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
         val intent = Intent(this,Restarter::class.java)
         intent.action = "com.locationtracker.mm.restart";
@@ -222,4 +220,8 @@ class MainActivity : AppCompatActivity() {
         }
         return gps_enabled
     }
+
+
+
+
 }
