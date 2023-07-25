@@ -14,7 +14,6 @@ import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -26,6 +25,7 @@ import com.locationtracker.mm.data.db.LocationEntity
 import com.locationtracker.mm.databinding.ActivityMainBinding
 import com.locationtracker.mm.hasPermission
 import com.locationtracker.mm.requestPermissionWithRationale
+import com.locationtracker.mm.utils.AutoStartHelper
 import com.locationtracker.mm.viewmodel.LocationUpdateViewModel
 
 
@@ -78,6 +78,11 @@ class MainActivity : AppCompatActivity() {
         //request permission
         requestFineLocationPermission()
         checkLocationEnable(context = this)
+
+        if (!AutoStartHelper().getAutoStartPermission(this)){
+            AutoStartHelper().requestAutoStartPermission(this);
+        }
+
 
         locationUpdateViewModel.locationListLiveData.observe(
             this
@@ -145,7 +150,9 @@ class MainActivity : AppCompatActivity() {
             REQUEST_BACKGROUND_LOCATION_PERMISSIONS_REQUEST_CODE ->
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     binding.recyclerViewLocation.visibility = View.VISIBLE
-                    locationUpdateViewModel.startLocationUpdates()
+                    if (!LocationService().isRunning){
+                        locationUpdateViewModel.startLocationUpdates()
+                    }
                     return
                 }
 
@@ -157,7 +164,9 @@ class MainActivity : AppCompatActivity() {
             hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)
 
         if (permissionApproved) {
-            locationUpdateViewModel.startLocationUpdates()
+            if (!LocationService().isRunning){
+                locationUpdateViewModel.startLocationUpdates()
+            }
             binding.recyclerViewLocation.visibility = View.VISIBLE
         } else {
             requestPermissionWithRationale(
